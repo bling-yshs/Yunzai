@@ -299,7 +299,7 @@ Bot.adapter.push(new class OneBotv11Adapter {
   }
 
   async getMemberArray(data) {
-    return (await data.bot.sendApi("cache_group_member", {
+    return (await data.bot.sendApi("get_group_member_list", {
       group_id: data.group_id,
     })).data || []
   }
