@@ -6,7 +6,7 @@ Bot.adapter.push(new class OneBotv11Adapter {
   id = "QQ"
   name = "OneBotv11"
   path = this.name
-  echo = {}
+  echo = new Map
   timeout = 60000
 
   makeLog(msg) {
@@ -17,18 +17,23 @@ Bot.adapter.push(new class OneBotv11Adapter {
     const echo = ulid()
     const request = { action, params, echo }
     ws.sendMsg(request)
-    this.echo[echo] = {
-      ...Promise.withResolvers(),
-      request, error: Error(),
-      timeout: setTimeout(() => {
-        this.echo[echo].reject(Object.assign(this.echo[echo].error, request, { timeout: this.timeout }))
-        Bot.makeLog("error", ["请求超时", request], data.self_id)
-        ws.terminate()
-      }, this.timeout),
-    }
-    return this.echo[echo].promise.finally(() => {
-      clearTimeout(this.echo[echo].timeout)
-      delete this.echo[echo]
+    const cache = Promise.withResolvers()
+    this.echo.set(echo, cache)
+    const timeout = setTimeout(() => {
+      cache.reject(Bot.makeError("请求超时", request, { timeout: this.timeout }))
+      Bot.makeLog("error", ["请求超时", request], data.self_id)
+      ws.terminate()
+    }, this.timeout)
+
+    return cache.promise.then(data => {
+      if (data.retcode !== 0 && data.retcode !== 1)
+        throw Bot.makeError(data.msg || data.wording, request, { error: data })
+      return data.data ? new Proxy(data, {
+        get: (target, prop) => target.data[prop] ?? target[prop],
+      }) : data
+    }).finally(() => {
+      clearTimeout(timeout)
+      this.echo.delete(echo)
     })
   }
 
@@ -1089,38 +1094,22 @@ Bot.adapter.push(new class OneBotv11Adapter {
 
       switch (data.post_type) {
         case "meta_event":
-          this.makeMeta(data, ws)
-          break
+          return this.makeMeta(data, ws)
         case "message":
-          this.makeMessage(data)
-          break
+          return this.makeMessage(data)
         case "notice":
-          this.makeNotice(data)
-          break
+          return this.makeNotice(data)
         case "request":
-          this.makeRequest(data)
-          break
+          return this.makeRequest(data)
         case "message_sent":
           data.post_type = "message"
-          this.makeMessage(data)
-          break
-        default:
-          Bot.makeLog("warn", `未知消息：${logger.magenta(data.raw)}`, data.self_id)
+          return this.makeMessage(data)
       }
-    } else if (data.echo && this.echo[data.echo]) {
-      if (![0, 1].includes(data.retcode))
-        this.echo[data.echo].reject(Object.assign(
-          this.echo[data.echo].error,
-          this.echo[data.echo].request,
-          { error: data },
-        ))
-      else
-        this.echo[data.echo].resolve(data.data ? new Proxy(data, {
-          get: (target, prop) => target.data[prop] ?? target[prop],
-        }) : data)
-    } else {
-      Bot.makeLog("warn", `未知消息：${logger.magenta(data.raw)}`, data.self_id)
+    } else if (data.echo) {
+      const cache = this.echo.get(data.echo)
+      if (cache) return cache.resolve(data)
     }
+    Bot.makeLog("warn", `未知消息：${logger.magenta(data.raw)}`, data.self_id)
   }
 
   load() {
