@@ -45,7 +45,7 @@ Bot.adapter.push(
     async makeFile(file, opts) {
       file = await Bot.Buffer(file, {
         http: true,
-        size: 10485760,
+        size: undefined,
         ...opts,
       })
       if (Buffer.isBuffer(file)) return `base64://${file.toString("base64")}`
