@@ -43,6 +43,11 @@ Bot.adapter.push(
     }
 
     async makeFile(file, opts) {
+      // 处理 ncfile:// 协议，直接转换为 file:// 协议供 NapCat 使用
+      if (typeof file === 'string' && file.startsWith('ncfile://')) {
+        return file.replace(/^ncfile:\/\//, 'file://')
+      }
+
       file = await Bot.Buffer(file, {
         http: true,
         size: undefined,
