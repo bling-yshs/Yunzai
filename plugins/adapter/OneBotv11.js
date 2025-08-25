@@ -67,6 +67,9 @@ Bot.adapter.push(
           case "reply":
             i.data.id = String(i.data.id)
             break
+          case "face":
+            i.data.id = String(i.data.id)
+            break
           case "button":
             continue
           case "node":
