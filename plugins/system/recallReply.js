@@ -15,7 +15,6 @@ export class recallReply extends plugin {
   }
 
   async recall(e) {
-    if (!e.isMaster) return false
     let recall
     if (e.group?.recallMsg) recall = e.group.recallMsg.bind(e.group)
     else if (e.friend?.recallMsg) recall = e.friend.recallMsg.bind(e.friend)
