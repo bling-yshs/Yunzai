@@ -31,20 +31,36 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-      # 第三步：执行同步和变基操作
-      - name: 第三步：尝试同步并变基
+      - name: 第三步：合并上游到 main
         run: |
-          set -e # 设置此项后，任何命令执行失败都会立刻中断整个脚本
-          git remote add upstream https://github.com/TimeRainStarSky/Yunzai.git
-          git fetch upstream
-          git checkout main
-          
-          # 核心命令：如果 rebase 产生冲突，此命令会失败并中断脚本
-          git rebase upstream/main
-          
-          # 只有在 rebase 成功后，才会执行到这一步
-          echo "变基成功，正在强制推送到你自己的仓库..."
-          git push origin main --force
+          set -e
+      
+          # 确保 upstream 指向正确（兼容重复运行）
+          if git remote get-url upstream >/dev/null 2>&1; then
+            git remote set-url upstream https://github.com/TimeRainStarSky/Yunzai.git
+          else
+            git remote add upstream https://github.com/TimeRainStarSky/Yunzai.git
+          fi
+      
+          git fetch --prune --tags upstream
+      
+          # 切到 main（第一次跑时若本地没有 main，则从 origin/main 建）
+          if git show-ref --verify --quiet refs/heads/main; then
+            git checkout main
+          else
+            git checkout -b main origin/main
+          fi
+      
+          # 先把本地 main 快进到 origin/main，减少冲突面
+          git pull --ff-only origin main
+      
+          # 与上游合并；若有冲突会失败 -> 触发你的失败邮件通知
+          git merge --no-edit upstream/main
+      
+          echo "合并成功，正在推送到你的仓库..."
+          git push origin main
+          # 如需同步标签可加：
+          # git push origin --tags
 
       # 第四步：发送邮件通知（仅在前一步失败时执行）
       - name: 第四步：若失败则发送邮件通知
@@ -79,4 +95,5 @@ jobs:
             失败原因很可能是 rebase 操作遇到了代码冲突，需要你手动解决。
 
             你可以点击下面的链接查看失败的详细日志：
+
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
