@@ -10,3 +10,4 @@
 /resources
 /dump.rdb
 /*.sh
+/.pnpm-store
