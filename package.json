@@ -32,7 +32,7 @@
     "node-fetch": "link:lib/modules/node-fetch",
     "node-schedule": "^2.1.1",
     "oicq": "link:lib/modules/oicq",
-    "pm2": "^6.0.11",
+    "pm2": "^6.0.13",
     "puppeteer": "*",
     "redis": "^4.7.1",
     "sequelize": "^6.37.7",
