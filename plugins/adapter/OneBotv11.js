@@ -624,7 +624,7 @@ Bot.adapter.push(
     async sendGroupFile(data, file, folder, name = path.basename(file)) {
       Bot.makeLog(
         "info",
-        `发送群文件：${folder || ""}/${name}(${file})`,
+        `发送群文件：${folder || ""}/${name}(${typeof file === 'string' ? file : `Buffer(${file.length} bytes)`})`,
         `${data.self_id} => ${data.group_id}`,
         true,
       )
