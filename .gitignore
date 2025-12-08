@@ -11,3 +11,4 @@
 /dump.rdb
 /*.sh
 /.pnpm-store
+/.idea
