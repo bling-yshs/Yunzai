@@ -19,8 +19,9 @@
     "art-template": "4.13.2",
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
-    "es-toolkit": "^1.45.1",
-    "express": "^4.22.1",
+    "compression": "^1.8.1",
+    "es-toolkit": "^1.46.1",
+    "express": "^5.2.1",
     "file-type": "^22.0.1",
     "https-proxy-agent": "^7.0.6",
     "image-size": "^2.0.2",
@@ -32,7 +33,7 @@
     "node-fetch": "link:lib/modules/node-fetch",
     "node-schedule": "^2.1.1",
     "oicq": "link:lib/modules/oicq",
-    "pm2": "^6.0.14",
+    "pm2": "^7.0.1",
     "puppeteer": "*",
     "redis": "^4.7.1",
     "sequelize": "^6.37.8",
@@ -40,10 +41,10 @@
     "strip-ansi": "^7.2.0",
     "ulid": "^3.0.2",
     "ws": "^8.20.0",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.4"
   },
   "devDependencies": {
-    "prettier": "^3.8.2"
+    "prettier": "^3.8.3"
   },
   "imports": {
     "#miao": "./plugins/miao-plugin/components/index.js",
@@ -58,6 +59,8 @@
       "sharp"
     ],
     "patchedDependencies": {
+      "body-parser@2": "lib/modules/body-parser.patch",
+      "compression": "lib/modules/compression.patch",
       "log4js": "lib/modules/log4js.patch",
       "streamroller": "lib/modules/streamroller.patch"
     }
