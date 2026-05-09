@@ -213,10 +213,8 @@ export class update extends plugin {
   }
 
   async updatePackage() {
-    const cmd = "pnpm install"
-    if (process.platform === "win32") return this.reply(`检测到依赖更新，请 #关机 后执行 ${cmd}`)
     await this.reply("开始更新依赖")
-    return this.exec(cmd)
+    return this.exec("pnpm install")
   }
 
   restart() {
