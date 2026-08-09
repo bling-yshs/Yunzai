@@ -108,8 +108,7 @@ Bot.adapter.push(
         else ret.push(data)
       }
 
-      for (const { file, name } of files)
-        ret.push(await sendFile(file, name))
+      for (const { file, name } of files) ret.push(await sendFile(file, name))
 
       if (message.length) ret.push(await send(message))
       if (ret.length === 1) return ret[0]
