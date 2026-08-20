@@ -2,8 +2,10 @@
 name: 自动同步上游仓库
 
 on:
+  # 每天北京时间 23:16 自动运行
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '16 22 * * *'
+      timezone: 'Asia/Shanghai'
 
   # 2. 手动触发：允许您在 Actions 页面手动点击运行
   workflow_dispatch:
