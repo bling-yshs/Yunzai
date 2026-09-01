@@ -152,10 +152,12 @@ export default class Puppeteer extends Renderer {
 
   /**
    * `chromium` 截图
-   * @param name
-   * @param data 模板参数
-   * @param data.tplFile 模板路径，必传
+   * @param {string} name 截图任务名称
+   * @param {object} [data] 渲染参数
+   * @param {string} [data.html] 直接渲染的HTML内容，与tplFile二选一
+   * @param {string} [data.tplFile] 模板路径，未提供html时必传
    * @param data.saveId  生成html名称，为空name代替
+   * @param {object} [data.viewport] 页面视口参数
    * @param data.imgType  screenshot参数，生成图片类型：jpeg，png
    * @param data.quality  screenshot参数，图片质量 0-100，jpeg是可传，默认90
    * @param data.omitBackground  screenshot参数，隐藏默认的白色背景，背景透明。默认不透明
@@ -163,14 +165,15 @@ export default class Puppeteer extends Renderer {
    * @param data.multiPage 是否分页截图，默认false
    * @param data.multiPageHeight 分页状态下页面高度，默认4000
    * @param data.pageGotoParams 页面goto时的参数
-   * @return img 不做segment包裹
+   * @returns {Promise<Buffer|Buffer[]|false>} 未经过segment包装的图片数据
    */
   async screenshot(name, data = {}) {
     if (!(await this.browserInit())) return false
     const pageHeight = data.multiPageHeight || 4000
 
-    const savePath = this.dealTpl(name, data)
-    if (!savePath) return false
+    const useHtml = typeof data.html === "string"
+    const savePath = useHtml ? "" : this.dealTpl(name, data)
+    if (!useHtml && !savePath) return false
 
     let buff = ""
     const start = Date.now()
@@ -194,8 +197,10 @@ export default class Puppeteer extends Renderer {
 
     try {
       page = await this.browser.newPage()
+      if (data.viewport) await page.setViewport(data.viewport)
       const pageGotoParams = { ...this.pageGotoParams, ...data.pageGotoParams }
-      await page.goto(`file://${_path}${lodash.trim(savePath, ".")}`, pageGotoParams)
+      if (useHtml) await page.setContent(data.html, pageGotoParams)
+      else await page.goto(`file://${_path}${lodash.trim(savePath, ".")}`, pageGotoParams)
       const body = (await page.$("#container")) || (await page.$("body"))
 
       // 计算页面高度
