@@ -7,7 +7,9 @@ export interface RenderData {
     height: number
     deviceScaleFactor?: number
   }
-  imgType?: 'jpeg' | 'png'
+  scale?: number
+  type?: "jpeg" | "png" | "webp"
+  imgType?: "jpeg" | "png"
   quality?: number
   omitBackground?: boolean
   path?: string

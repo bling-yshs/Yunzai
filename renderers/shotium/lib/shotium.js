@@ -155,8 +155,12 @@ export default class Shotium extends Renderer {
    * `shotium` 截图
    * @param name 模板名（plugin/path）
    * @param data 模板参数
-   * @param data.tplFile 模板路径，必传
+   * @param data.html 直接截图的 HTML 内容，与 tplFile 二选一
+   * @param data.tplFile 模板路径，未提供 html 时必传
    * @param data.saveId  生成 html 名称，为空 name 代替
+   * @param data.viewport 单次截图的 CSS 视口尺寸
+   * @param data.scale 单次截图的设备像素比，兼容 viewport.deviceScaleFactor
+   * @param data.type 生成图片类型：jpeg，png，webp
    * @param data.imgType  生成图片类型：jpeg，png，webp
    * @param data.quality  图片质量 0-100，jpeg / webp 可传，默认 90
    * @param data.omitBackground  隐藏默认的白色背景，背景透明。jpeg 无 alpha 通道会忽略
@@ -167,18 +171,39 @@ export default class Shotium extends Renderer {
    * @return img 不做 segment 包裹；multiPage 时返回数组；失败返回 false
    */
   async screenshot(name, data = {}) {
-    const savePath = this.dealTpl(name, data)
+    const useHtml = typeof data.html === "string"
+    let savePath
+    let inlineHtmlDir
+    if (useHtml) {
+      const tempDir = path.resolve(_path, "temp/shotium-inline")
+      fs.mkdirSync(tempDir, { recursive: true })
+      inlineHtmlDir = fs.mkdtempSync(path.join(tempDir, "html-"))
+      savePath = path.join(inlineHtmlDir, "index.html")
+      fs.writeFileSync(savePath, data.html, "utf8")
+    } else {
+      savePath = this.dealTpl(name, data)
+    }
     if (!savePath) return false
 
     const start = Date.now()
     const pageHeight = Number(data.multiPageHeight) || this.config.multiPageHeight
-    const type = data.multiPage ? "jpeg" : data.imgType || this.config.imgType
+    const type = data.multiPage ? "jpeg" : data.type || data.imgType || this.config.imgType
+    const viewport = {
+      width: Number(data.viewport?.width) || this.config.viewport.width,
+      height: Number(data.viewport?.height) || this.config.viewport.height,
+    }
+    const scale =
+      Number(data.scale) > 0
+        ? Number(data.scale)
+        : Number(data.viewport?.deviceScaleFactor) > 0
+          ? Number(data.viewport.deviceScaleFactor)
+          : this.config.scale
 
     const options = {
-      file: pathToFileURL(path.resolve(_path, savePath)).href,
+      file: pathToFileURL(useHtml ? savePath : path.resolve(_path, savePath)).href,
       type,
-      viewport: { ...this.config.viewport },
-      scale: this.config.scale,
+      viewport,
+      scale,
       pageGotoParams: this.gotoParams(data.pageGotoParams),
       /** 模板通过相对路径引用各插件 resources 目录下的图片和字体，file:// 文档必须放开子资源读取 */
       allowFileAccess: true,
@@ -204,6 +229,7 @@ export default class Shotium extends Renderer {
       return false
     } finally {
       this.shoting.pop()
+      if (inlineHtmlDir) fs.rmSync(inlineHtmlDir, { recursive: true, force: true })
     }
 
     if (ret.length === 0 || !ret[0]) {
