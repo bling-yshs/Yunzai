@@ -8,6 +8,7 @@ patchedDependencies:
   streamroller: lib/modules/streamroller.patch
 
 strictDepBuilds: false
+blockExoticSubdeps: false
 allowBuilds:
   classic-level: true
   log4js: true
