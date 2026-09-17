@@ -12,7 +12,7 @@
     "start": "pm2 start config/pm2.yaml",
     "stop": "pm2 stop config/pm2.yaml",
     "restart": "pm2 restart config/pm2.yaml",
-    "log": "pm2 log --lines 100",
+    "log": "pm2 log --raw --lines 100",
     "lint": "git ls-files '*.js'|xargs prettier --write --list-different"
   },
   "dependencies": {
