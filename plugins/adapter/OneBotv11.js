@@ -44,8 +44,8 @@ Bot.adapter.push(
 
     async makeFile(file, opts) {
       // 处理 ncfile:// 协议，直接转换为 file:// 协议供 NapCat 使用
-      if (typeof file === 'string' && file.startsWith('ncfile://')) {
-        return file.replace(/^ncfile:\/\//, 'file://')
+      if (typeof file === "string" && file.startsWith("ncfile://")) {
+        return file.replace(/^ncfile:\/\//, "file://")
       }
 
       file = await Bot.Buffer(file, {
@@ -130,12 +130,7 @@ Bot.adapter.push(
       return this.sendMsg(
         msg,
         message => {
-          Bot.makeLog(
-            "info",
-            `发送好友消息：${this.makeLog(message)}`,
-            `${data.self_id} => ${data.user_id}`,
-            true,
-          )
+          Bot.makeLog("info", `发送好友消息：${this.makeLog(message)}`, false)
           return data.bot.sendApi("send_msg", {
             user_id: data.user_id,
             message,
@@ -150,12 +145,7 @@ Bot.adapter.push(
       return this.sendMsg(
         msg,
         message => {
-          Bot.makeLog(
-            "info",
-            `发送群消息：${this.makeLog(message)}`,
-            `${data.self_id} => ${data.group_id}`,
-            true,
-          )
+          Bot.makeLog("info", `发送群消息：${this.makeLog(message)}`, false)
           return data.bot.sendApi("send_msg", {
             group_id: data.group_id,
             message,
@@ -170,12 +160,7 @@ Bot.adapter.push(
       return this.sendMsg(
         msg,
         message => {
-          Bot.makeLog(
-            "info",
-            `发送频道消息：${this.makeLog(message)}`,
-            `${data.self_id}] => ${data.guild_id}-${data.channel_id}`,
-            true,
-          )
+          Bot.makeLog("info", `发送频道消息：${this.makeLog(message)}`, false)
           return data.bot.sendApi("send_guild_channel_msg", {
             guild_id: data.guild_id,
             channel_id: data.channel_id,
@@ -677,7 +662,7 @@ Bot.adapter.push(
     async sendGroupFile(data, file, folder, name = path.basename(file)) {
       Bot.makeLog(
         "info",
-        `发送群文件：${folder || ""}/${name}(${typeof file === 'string' ? file : `Buffer(${file.length} bytes)`})`,
+        `发送群文件：${folder || ""}/${name}(${typeof file === "string" ? file : `Buffer(${file.length} bytes)`})`,
         `${data.self_id} => ${data.group_id}`,
         true,
       )
@@ -1124,12 +1109,7 @@ Bot.adapter.push(
         case "private": {
           const name =
             data.sender.card || data.sender.nickname || data.bot.fl.get(data.user_id)?.nickname
-          Bot.makeLog(
-            "info",
-            `好友消息：${name ? `[${name}] ` : ""}${data.raw_message}`,
-            `${data.self_id} <= ${data.user_id}`,
-            true,
-          )
+          Bot.makeLog("info", `好友消息：${name ? `[${name}] ` : ""}${data.raw_message}`, false)
           break
         }
         case "group": {
@@ -1143,8 +1123,7 @@ Bot.adapter.push(
           Bot.makeLog(
             "info",
             `群消息：${user_name ? `[${group_name ? `${group_name}, ` : ""}${user_name}] ` : ""}${data.raw_message}`,
-            `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
-            true,
+            false,
           )
           break
         }
@@ -1154,8 +1133,7 @@ Bot.adapter.push(
           Bot.makeLog(
             "info",
             `频道消息：[${data.sender.nickname}] ${Bot.String(data.message)}`,
-            `${data.self_id} <= ${data.group_id}, ${data.user_id}`,
-            true,
+            false,
           )
           Object.defineProperty(data, "friend", {
             get() {
