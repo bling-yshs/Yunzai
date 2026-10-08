@@ -156,7 +156,7 @@ export default class Puppeteer extends Renderer {
    * @param {object} [data] 渲染参数
    * @param {string} [data.html] 直接渲染的HTML内容，与tplFile二选一
    * @param {string} [data.tplFile] 模板路径，未提供html时必传
-   * @param data.saveId  生成html名称，为空name代替
+   * @param data.saveId  生成html名称，未指定时使用name的最后一段
    * @param {object} [data.viewport] 页面视口参数
    * @param data.imgType  screenshot参数，生成图片类型：jpeg，png
    * @param data.quality  screenshot参数，图片质量 0-100，jpeg是可传，默认90
@@ -168,6 +168,11 @@ export default class Puppeteer extends Renderer {
    * @returns {Promise<Buffer|Buffer[]|false>} 未经过segment包装的图片数据
    */
   async screenshot(name, data = {}) {
+    return Renderer.withTpl(name, data, () => this.captureScreenshot(name, data))
+  }
+
+  /** 执行已取得模板路径锁的截图 */
+  async captureScreenshot(name, data) {
     if (!(await this.browserInit())) return false
     const pageHeight = data.multiPageHeight || 4000
 
